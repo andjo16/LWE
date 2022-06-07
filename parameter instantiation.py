@@ -465,30 +465,30 @@ def main():
     
     n=384
     res=parameterInstation(n,t,r)
-    #results = np.vstack([results,res])
+    results = np.vstack([results,res])
     
     n=512
     res=parameterInstation(n,t,r)
-    #results = np.vstack([results,res])
+    results = np.vstack([results,res])
     
     #Parameters to achieve a specicif decryption error rate
                              #n,r,t,epsilon
-    parameters = np.array([ #[256,1,2,0.82], #0.1%
-                            #[256,1,2,0.75], #1%
-                            #[256,1,2,0.67], #10%
+    parameters = np.array([ [256,1,2,0.82], #0.1%
+                            [256,1,2,0.75], #1%
+                            [256,1,2,0.67], #10%
                             [128,1,2,0.92], #0.1%
                             [128,1,2,0.84], #1%
                             [128,1,2,0.74], #10%
-                            #[384,1,2,0.77], #0.1%
-                            #[384,1,2,0.71], #1%
-                            #[384,1,2,0.64], #10%
-                            #[512,1,2,0.75], #0.1%
-                            #[512,1,2,0.69], #1%
-                            #[512,1,2,0.62]  #10%
+                            [384,1,2,0.77], #0.1%
+                            [384,1,2,0.71], #1%
+                            [384,1,2,0.64], #10%
+                            [512,1,2,0.75], #0.1%
+                            [512,1,2,0.69], #1%
+                            [512,1,2,0.62]  #10%
                             ])
     #Epsilon is chosen by visual inspection of graphs
 
-    results =onePercentageErrorParameters(parameters)#np.vstack([results,onePercentageErrorParameters(parameters)])
+    results =np.vstack([results,onePercentageErrorParameters(parameters)])
 
     titles = ["$n$","$\\ell$","$m$","$p$","$r$","$t$","$\\alpha$","$\\epsilon$","$c$","$a$","$\\delta$","Lattice dim. \\\\ in attack","Public key size","Blowup factor","Error prob. \\\\ upper bound"]
     formats = ["%8d","%8d", "%8d","%8d","%8d","%8d","%8.4f","%8.2f","%8.2f","%8.2f","%8.4f","%5d","%8.2e","%8.2f","%8.3e"]
@@ -500,8 +500,8 @@ def main():
     elaborate=False
     generateKey=True
     
-    findErrorProb = True #estimate decryption error probability
-    findForcedErrorProb = True #estimate success probability of forcing decryption given LWE-oracle
+    findErrorProb = False #estimate decryption error probability
+    findForcedErrorProb = False #estimate success probability of forcing decryption given LWE-oracle
 
     if(results.ndim == 1):
         results = np.reshape(results,(-1,results.size))
@@ -518,7 +518,7 @@ def main():
         formats.append("%d")
     
     if findForcedErrorProb:
-        repetitions=1
+        repetitions=1000000
         err = forcedError(results,repetitions,generateKey,elaborate)
         results=np.hstack((results,np.array(err).reshape(-1,2)))
         titles = np.append(titles,["Empirical FFP-NG \\\\ error prob.","Sample Count"])
