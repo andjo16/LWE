@@ -413,7 +413,7 @@ def matrixToLatex(m,titles,formats):
                 tmp +="\multirow{3}{*}{\\shortstack{Meta\\\\ parameters}}\n"
         else:
             tmp+= "\\\\\n\cline{2-%d}\n" %(columns+2)
-        if i<len(titles)-2 and "FFP-NG" in titles[i+1]:
+        if i<len(titles)-2 and ("FFP-NG" in titles[i+1] or "letter" in titles[i+1]):
             tmp+="\hline\n"
         string += tmp
     string+="\\end{tabular}"
@@ -496,6 +496,7 @@ def main():
     titlesDict = dict(zip(titles,formats))
     titlesDict.update(dict(zip(["Empirical letter \\\\ error prob.","Empirical message \\\\ error prob.","Encryption Count","Key reuse"],["%8.3e","%8.3e","%d","%d"])))
     titlesDict.update(dict(zip(["Empirical FFP-NG \\\\ error prob.","Sample Count"],["%8.3e","%d"])))
+    titlesDict.update(dict(zip(["Prob. ratio"],["%8.2f"])))
     
     elaborate=False
     generateKey=True
@@ -558,6 +559,28 @@ def main():
     if(os.path.exists(resultPath)):
         results,titles = mergeResultsWithFile(results,titles,resultPathFinal)
     
+    if("Error prob. \\\\ upper bound" in titles and "Empirical message \\\\ error prob." in titles):
+        i = np.where(titles=="Error prob. \\\\ upper bound")[0][0]
+        j = np.where(titles=="Empirical message \\\\ error prob.")[0][0]
+        print(i)
+        tmp = results[[i,j],:]
+        print(i,j,tmp)
+        probRatio = results[i,:]/results[j,:]
+        print(probRatio)
+        if("Prob. ratio" in titles):
+            #if ratio already in table, then recalculate and insert at found location
+            i = np.where(titles=="Prob. ratio")[0][0]
+            results[i,:]=probRatio #recalculate ratio and insert
+        else:
+            #if ratio not already in table, then insert it at correct location
+            print("#####################Prob ratio not found")
+            titles = np.append(titles,["Prob. ratio"])
+            formats.append("%8.2f")
+            results=np.vstack((results,np.array(probRatio).reshape(1,-1)))
+            results[[19,20,21],:]=results[[21,19,20],:]
+            titles[[19,20,21]]=titles[[21,19,20]]
+    
+    #results[:,[4,5,6,7,8,9]]=results[:,[7,8,9,4,5,6]]
     
     #Store combined results
     saveResults(results,titles,resultPath) #removed
