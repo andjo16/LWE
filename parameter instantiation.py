@@ -1,3 +1,7 @@
+'''
+By Andreas H. Jørgensen
+'''
+
 import sympy
 from sympy.solvers import solve, nsolve
 from sympy import Symbol, symbols, log, nonlinsolve, linsolve, Eq,N, Interval, Min,solveset,exp

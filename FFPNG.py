@@ -1,4 +1,7 @@
 '''
+By Andreas H. Jørgensen
+'''
+'''
 The goal of this file is to verify that the probability that the
 k=m/3 largest samples out of m sample from the rounded gaussian/normal
 distribution is at p/2trk with high (non-negligible probability).
