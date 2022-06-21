@@ -1,5 +1,6 @@
 '''
 By Andreas H. Jørgensen (s202743)
+
 This file is used to generate parameters for the LWE encryption scheme 
 and generate empirical results on the decryption failure rate.
 This file uses LWE64.py and FFPNG.py
@@ -554,18 +555,15 @@ def main():
         f.write(table)
     
     #Combine results
-    if(os.path.exists(resultPath)):
+    if(os.path.exists(resultPathFinal)):
         results,titles = mergeResultsWithFile(results,titles,resultPathFinal)
     
-    #Used to find the ratio between theoretical upper bound and actual decryption failure rate
+    #Used to find the ratio between theoretical upper bound and empirical decryption failure rate
     if("Error prob. \\\\ upper bound" in titles and "Empirical message \\\\ error prob." in titles):
         i = np.where(titles=="Error prob. \\\\ upper bound")[0][0]
         j = np.where(titles=="Empirical message \\\\ error prob.")[0][0]
-        print(i)
         tmp = results[[i,j],:]
-        print(i,j,tmp)
         probRatio = results[i,:]/results[j,:]
-        print(probRatio)
         if("Prob. ratio" in titles):
             #if ratio already in table, then recalculate and insert at found location
             i = np.where(titles=="Prob. ratio")[0][0]
