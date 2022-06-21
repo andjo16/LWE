@@ -15,6 +15,7 @@ Python files
  - `combinedResultsFinal.npy`: The file containing the data giving the results presented in the report. 
  The file contains a numpy matrix of all the results, and us automatically loaded by `parameter instations.py`
  - `combinedLatexFinal.txt`: The latex-formatting of the data, in the form presented in the report.
+ - `README.md`: This file.
  
 The script runs under python 3.9.13 It can be run with the command  
 `python "parameter instantiation.py"`
