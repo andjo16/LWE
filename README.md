@@ -12,18 +12,18 @@ Python files
  to estimate empirical rate of decryption errors
  
  Other files
- - `combinedResultsFinal.npy`: The file containing the data giving results presented in the report. 
+ - `combinedResultsFinal.npy`: The file containing the data giving the results presented in the report. 
  The file contains a numpy matrix of all the results, and us automatically loaded by `parameter instations.py`
  - `combinedLatexFinal.txt`: The latex-formatting of the data, in the form presented in the report.
  
-The script runs under python 3. It can be run with the command  
+The script runs under python 3.9.13 It can be run with the command  
 `python "parameter instantiation.py"`
 
 When the above is run, the file will recalculate the all the sets of parameters, load the data in `combinedResultsFinal.npy` 
 and merge the data, before printing the results as a latex table.  
 The script will generate two folders `results/` and `results2/`. These folders will only contain temporary backup files.
 
-To generate empirical results anew, set the variables `findErrorProb`=`True` and `findForcedErrorProb`=`True`.  
+To generate empirical results anew, set the variables `findErrorProb`=`True` and `findForcedErrorProb`=`True` in the ``main`` function of `parameter instations.py`.  
 However be aware that the script is expected to run for many hours if this is done.
 
  
