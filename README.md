@@ -1,4 +1,4 @@
-By Andreas Holm Jørgensen  (s202743)
+By Andreas Holm Jørgensen  (s202743)  
 Used for Master Thesis project within the subject of Post Quantum Cryptography  
 for completing a degree in Master of Science in Engineering (Computer Science) at Technical University of Denmark (DTU), June 2022
 
