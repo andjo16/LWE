@@ -1,7 +1,6 @@
 '''
-By Andreas H. Jørgensen
-'''
-'''
+By Andreas H. Jørgensen (s202743)
+
 THE LWE Encryption system
 This version uses 64 bit integers to avoid overflow problems
 '''

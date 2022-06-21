@@ -1,14 +1,13 @@
 '''
-By Andreas H. Jørgensen
-'''
-'''
+By Andreas H. Jørgensen (s202743)
+
 The goal of this file is to verify that the probability that the
 k=m/3 largest samples out of m sample from the rounded gaussian/normal
-distribution is at p/2trk with high (non-negligible probability).
+distribution is at least p/2trk with high (non-negligible probability).
 This is to verify that for any row in the error matrix E of the cryptosystem,
 we will have that the k=m/3 largest elements sums to at least p/2tr sucht that
 when scaling each of the k elements by r we have a sum of at least p/2t giving
-rise to a decryption error.
+rise to a decryption failue.
 -> this gives os the possibility to chose d such that there is a high probability
    of decryption errors
 
@@ -56,7 +55,7 @@ def testError(m,p,t,r,alpha):
 def errorProb(m,p,t,r,alpha,repetitions,elaborate=False):
     '''
     Uses the set of parameters to generate m samples
-    and checks whether we can use it to enforce an encryption error
+    and checks whether we can use it to enforce an decryption error
     Using LWE oracle.
     This is repeated 'repetitions' times and a success probability is
     estimated and returned
@@ -86,9 +85,6 @@ def errorProbParallel(m,p,t,r,alpha,repetitions,elaborate=False):
         
         count = 0        
         for i,res in enumerate(results):
-            #print(res.get())
-            #if res.get()==True:
-            #    count = count+1
             count += res.get()
             if((i+1)%2000==0):
                 print("(" + str(i+1)+ "/" + str(repetitions)+ "=" + "{:.1f}".format(i/repetitions*100)+"%) Success Rate: " + "{:.2f}".format(count/(i+1)*100) + "%")
