@@ -30,18 +30,23 @@ def findPandM(n,l,t,r):
         '''
         return (2*(n+l)*math.log(p[0],2)+200)/math.log(2*r+1,2)-p[0]/(2*t*r)
     
-    p=fsolve(f,[10000]) #find p
+    p=fsolve(f,[100000]) #find p
     if(p>10):
             #p needs to be a prime
             p=math.ceil(p)
+            #p=2000000 Manually setting P high
             if not sympy.isprime(p):
                 p=sympy.nextprime(p)
             p=int(p)
+            
             #Update m according to p
-            m=math.ceil((2*(n+l)*math.log(p,2)+200)/math.log(2*r+1,2))
+            m=mFunc(n,l,p,r) #math.ceil((2*(n+l)*math.log(p,2)+200)/math.log(2*r+1,2))
     else:
         print("WARNING: p is very small")
     return p,m
+
+def mFunc(n,l,p,r):
+    return math.ceil((2*(n+l)*math.log(p,2)+200)/math.log(2*r+1,2))
 
 def findHermiteFactor(n,p,alpha):
     '''
@@ -51,7 +56,7 @@ def findHermiteFactor(n,p,alpha):
     '''
     return 2**((math.log(alpha/(1.5*math.sqrt(2*math.pi)),2)/(-2))**2/(n*math.log(p,2)))
 
-def parameterInstation(n=128,t=2,r=1):
+def parameterInstation(n,t,r):
     '''
     Given a value of n, t and r this functions finds the
     remaining parameters according to the description in the report
@@ -59,6 +64,52 @@ def parameterInstation(n=128,t=2,r=1):
     l=n
     p,m=findPandM(n,l,t,r) #first we find p and m
 
+    #Now we find c (the exponent of gamma, as p>zeta*sqrt(ln(n)/n)
+    c = math.log(p/(2*math.sqrt(math.log(n)/n)))/math.log(n)
+    #c=math.floor(c * 100)/100.0
+    
+    #We can now find epsilon as the largest value that allows the upper and lower bounds on alpha to meet
+    #This has been done by equalizing the two bounds and isolate epsilon
+    epsilon = math.log(n**c*math.sqrt(math.log(n))/(n*t*math.sqrt((r*(r+1)*m)/(6*math.pi))))/(math.log(math.log(n)))-1/2
+    #epsilon=math.floor(epsilon * 100)/100.0
+    
+    
+    #Find the value of a that minimizes the upper bound for the probability of decryption failure
+    def f(a):
+        '''
+        Decryption error as a function of a
+        '''
+        return l*2*math.exp(-2*m*r**2/a[0]**2)+l/((a[0]-1)/a[0]*(math.log(n)**(1/2+epsilon))/2)*math.exp(-(((a[0]-1)/a[0]*(math.log(n))**(1/2+epsilon))**2)/8)
+    a = fmin(f,np.array([10]),disp=False)
+    
+    #Find remaining parameters
+    alpha = 1/(t*math.sqrt((r*(r+1)*m/(6*math.pi)))*(math.log(n))**(1/2+epsilon))
+    delta=findHermiteFactor(n,p,alpha)
+    dim = math.ceil(math.sqrt(n*math.log(p)/math.log(delta)))
+    keySize = math.ceil((n+l)*m*math.log(p))
+    ciphertextBlowup = (1+n/l)*math.log(p)/math.log(t)
+
+    #Return all results 
+    ress = np.array([n,l,m,p,r,t,alpha,epsilon,c,a[0],delta,dim,keySize,ciphertextBlowup,f(a)*100])
+    return ress
+
+
+def parameterInstationV2(n,t,r,p):
+    '''
+    Given a value of n, t and r this functions finds the
+    remaining parameters according to the description in the report
+    '''
+    l=n
+    p2,m=findPandM(n,l,t,r) #first we find p and m
+    if (p2>p):
+        #Given p to small, we increase it to be p$
+        p=p2
+    else:
+        if not sympy.isprime(p):
+            p=sympy.nextprime(p)
+        p=int(p)
+        m=mFunc(n,l,p,r)
+        
     #Now we find c (the exponent of gamma, as p>zeta*sqrt(ln(n)/n)
     c = math.log(p/(2*math.sqrt(math.log(n)/n)))/math.log(n)
     #c=math.floor(c * 100)/100.0
@@ -459,18 +510,30 @@ def main():
     '''
     n=128
     res = parameterInstation(n,t,r)
-    results =res#np.vstack([results,res])
+    #results =res#np.vstack([results,res])
     
     n=256
     res=parameterInstation(n,t,r)
-    results = np.vstack([results,res])
+    #results = np.vstack([results,res])
     
     n=384
     res=parameterInstation(n,t,r)
-    results = np.vstack([results,res])
+    #results = np.vstack([results,res])
     
     n=512
     res=parameterInstation(n,t,r)
+    #results = np.vstack([results,res])
+   
+    n=256
+    res=parameterInstation(n,2,50)
+    results =res
+    res=parameterInstation(n,50,1)
+    results = np.vstack([results,res])
+    res = parameterInstationV2(n,t,r,200000) #200k
+    results = np.vstack([results,res])
+    res = parameterInstationV2(n,2,50,2000000) #2mio
+    results = np.vstack([results,res])
+    res = parameterInstationV2(n,50,1,2000000) #2mio
     results = np.vstack([results,res])
     
     #Parameters to achieve a specicif decryption error rate
@@ -490,7 +553,7 @@ def main():
                             ])
     #Epsilon is chosen by visual inspection of graphs
 
-    results =np.vstack([results,onePercentageErrorParameters(parameters)])
+    #results =np.vstack([results,onePercentageErrorParameters(parameters)])
 
     titles = ["$n$","$\\ell$","$m$","$p$","$r$","$t$","$\\alpha$","$\\epsilon$","$c$","$a$","$\\delta$","Lattice dim. \\\\ in attack","Public key size","Blowup factor","Error prob. \\\\ upper bound"]
     formats = ["%8d","%8d", "%8d","%8d","%8d","%8d","%8.4f","%8.2f","%8.2f","%8.2f","%8.4f","%5d","%8.2e","%8.2f","%8.3e"]
@@ -499,6 +562,7 @@ def main():
     titlesDict.update(dict(zip(["Empirical letter \\\\ error prob.","Empirical message \\\\ error prob.","Encryption Count","Key reuse"],["%8.3e","%8.3e","%d","%d"])))
     titlesDict.update(dict(zip(["Empirical FFP-NG \\\\ error prob.","Sample Count"],["%8.3e","%d"])))
     titlesDict.update(dict(zip(["Prob. ratio"],["%8.2f"])))
+    titlesDict.update(dict(zip(["gen", "enc", "dec","size","blowup"],["%8.2e","%8.2e","%8.2e","%8.2e","%8.2f"])))
     
     elaborate=False
     generateKey=True
@@ -578,6 +642,34 @@ def main():
             titles[[19,20,21]]=titles[[21,19,20]]
     
     #results[:,[4,5,6,7,8,9]]=results[:,[7,8,9,4,5,6]]
+    results=results[:,[1,7,8,9,16,17,18,19,20]]
+    
+    n = results[0]
+    print(n)
+    l = results[1]
+    print(l)
+    m = results[2]
+    p = results[3]
+    r = results[4]
+    t = results[5]
+    
+    gen = n*m*l*(np.log(p)**2)
+    enc = (n+l)*m*(np.log(p)**2)
+    dec = n*l*(np.log(p)**2)
+    #size = (n+l)*m*(np.log(p))
+    #blowup = (1+n/l)*(np.log(p)/np.log(t))
+    print(type(titles))
+    titles = np.concatenate((titles,np.array(["gen", "enc", "dec"])),axis=None)
+    #titles = np.concatenate((titles,np.array(["gen", "enc", "dec","size","blowup"])),axis=None)
+    #formats= np.concatenate((formats,np.array(["%8.2f","%8.2f","%8.2f","%8.2f","%8.2f"])), axis=None)
+    results=np.vstack((results,np.array(gen).reshape(1,-1)))
+    results=np.vstack((results,np.array(enc).reshape(1,-1)))
+    results=np.vstack((results,np.array(dec).reshape(1,-1)))
+    #results=np.vstack((results,np.array(size).reshape(1,-1)))
+    #results=np.vstack((results,np.array(blowup).reshape(1,-1)))
+    
+    results = results[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,22,23,24],:]
+    titles = titles[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,22,23,24]]
     
     #Store combined results
     saveResults(results,titles,resultPath)
